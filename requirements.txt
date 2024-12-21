@@ -1,0 +1,15 @@
+streamlit
+langchain
+pypdf
+sentence_transformers
+faiss-cpu
+torch
+transformers
+Pillow
+pandas
+layoutparser
+embeddings
+fitz
+pytest
+fastapi
+pymupdf
