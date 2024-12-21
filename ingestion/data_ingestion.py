@@ -5,7 +5,7 @@ from ingestion.pdf_parser import parse_pdf
 from embeddings.embedder import Embedder
 from retriever.retriever import Retriever
 
-CHUNK_SIZE = 1000  # Nombre de caractères (ou tokens) par chunk
+CHUNK_SIZE = 800  # Nombre de caractères (ou tokens) par chunk
 CHUNK_OVERLAP = 100
 
 def chunk_text(text: str, chunk_size: int, overlap: int) -> List[str]:

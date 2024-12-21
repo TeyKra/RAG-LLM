@@ -6,13 +6,21 @@ import pdfplumber
 import fitz  # PyMuPDF
 
 def parse_pdf(file_path: str) -> Dict[str, Any]:
+    """
+    Extrait le texte brut, les tableaux et les images d'un fichier PDF.
+
+    Retourne un dictionnaire contenant :
+      - "text": str
+      - "tables": List[str]
+      - "images": List[str]
+    """
     result = {
         "text": "",
         "tables": [],
         "images": []
     }
 
-    # --- Extraction texte et tableaux (pdfplumber) ---
+    # --- Extraction du texte et des tableaux avec pdfplumber ---
     with pdfplumber.open(file_path) as pdf:
         all_text = []
         for page in pdf.pages:
@@ -29,7 +37,7 @@ def parse_pdf(file_path: str) -> Dict[str, Any]:
 
         result["text"] = "\n".join(all_text)
 
-    # --- Extraction des images (PyMuPDF) ---
+    # --- Extraction des images avec PyMuPDF (fitz) ---
     doc = fitz.open(file_path)
     image_dir = os.path.join(os.path.dirname(file_path), "extracted_images")
     os.makedirs(image_dir, exist_ok=True)
@@ -41,15 +49,16 @@ def parse_pdf(file_path: str) -> Dict[str, Any]:
             xref = img_info[0]
             try:
                 base_image = doc.extract_image(xref)
-            except fitz.fitz.FileDataError as err:
-                # Erreur d'image corrompue
+            except fitz.FileDataError as err:
+                # Images corrompues (width=0, etc.) => on ignore
                 print(f"[Warning] Impossible d'extraire l'image xref={xref}, page={page_index+1}. Raison : {err}")
                 continue
             except Exception as e:
-                # Catch-all pour éviter tout blocage
+                # Autres problèmes inattendus
                 print(f"[Error] Exception lors de l'extraction de l'image xref={xref}, page={page_index+1} : {e}")
                 continue
 
+            # Si on arrive ici, base_image est valide
             image_bytes = base_image["image"]
             image_ext = base_image["ext"]
             image_filename = f"page{page_index+1}_img{img_index+1}.{image_ext}"
