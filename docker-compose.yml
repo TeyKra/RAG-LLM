@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  llm:
+    build:
+      context: .
+      dockerfile: dockerfile.rag_llm
+    ports:
+      - "5001:5001"  # Mappe le port 5001 du conteneur sur l'hôte
+    depends_on:
+      - chroma
+    networks:
+      - app-network
+    volumes:
+      - ./data:/app/data
+    environment:
+      PYTHONPATH: /app
+
+  api:
+    build:
+      context: .
+      dockerfile: dockerfile.api
+    ports:
+      - "5002:5002"  # Mappe le port 5000 du conteneur sur l'hôte
+    depends_on:
+      - chroma
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: dockerfile.frontend
+    ports:
+      - "5003:5003"
+    depends_on:
+      - api
+    networks:
+      - app-network
+
+  chroma:
+    build:
+      context: .
+      dockerfile: dockerfile.chroma
+    ports:
+      - "8000:8000"  # Mappe le port 8000 du conteneur sur l'hôte
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

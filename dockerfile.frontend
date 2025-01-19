@@ -1,0 +1,17 @@
+# Dockerfile.frontend
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copier le script Python
+COPY src/frontend.py /app/
+
+# Copier tout le dossier frontend
+COPY frontend /app/frontend
+
+EXPOSE 5003
+
+CMD ["python", "frontend.py"]
