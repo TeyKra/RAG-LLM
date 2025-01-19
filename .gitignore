@@ -1,0 +1,11 @@
+*.pyc
+.DS_Store
+backup
+chroma/
+.venv/
+.venv
+env/
+.env
+pytest_cache/
+__pycache__/
+src/__pycache__/

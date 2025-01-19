@@ -1,0 +1,9 @@
+# Ignorer l’environnement virtuel local
+.venv
+
+# Ignorer le dossier git
+.git
+
+# Ignorer les fichiers de cache Python
+__pycache__
+*.pyc
