@@ -75,6 +75,36 @@ Une fois les conteneurs démarrés, accédez à l'application frontend via votre
 
 ---
 
+## Terraform : 
+
+### Initialisation
+```bash
+Terraform init
+```
+
+### Validation
+```bash
+Terraform validate
+```
+
+### Planification 
+```bash 
+Terraform plan
+```
+
+### Application
+
+```bash
+Terraform apply
+```
+
+### Destruction 
+
+```bash
+Terraform destroy
+```
+
+
 ## Ressources supplémentaires
 
 - [Documentation officielle de Docker](https://docs.docker.com/)
