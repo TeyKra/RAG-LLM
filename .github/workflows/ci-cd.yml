@@ -1,4 +1,3 @@
-yml 
 name: CI/CD Pipeline
 
 on:
@@ -29,23 +28,23 @@ jobs:
       # Étape 3 : Construire et pousser les images Docker
       - name: Build and Push LLM Service Image
         run: |
-          docker build -t ykfly/projet:llm-service-latest -f dockerfile.rag_llm .
-          docker push ykfly/projet:llm-service-latest
+          docker build -t mgn94/infrastructure-rag-llm:llm-service-latest -f dockerfile.rag_llm .
+          docker push mgn94/infrastructure-rag-llm:llm-service-latest
 
       - name: Build and Push API Service Image
         run: |
-          docker build -t ykfly/projet:api-service-latest -f dockerfile.api .
-          docker push ykfly/projet:api-service-latest
+          docker build -t mgn94/infrastructure-rag-llm:api-service-latest -f dockerfile.api .
+          docker push mgn94/infrastructure-rag-llm:api-service-latest
 
       - name: Build and Push Frontend Service Image
         run: |
-          docker build -t ykfly/projet:frontend-service-latest -f dockerfile.frontend .
-          docker push ykfly/projet:frontend-service-latest
+          docker build -t mgn94/infrastructure-rag-llm:frontend-service-latest -f dockerfile.frontend .
+          docker push mgn94/infrastructure-rag-llm:frontend-service-latest
 
       - name: Build and Push Chroma Service Image
         run: |
-          docker build -t ykfly/projet:chroma-service-latest -f dockerfile.chroma .
-          docker push ykfly/projet:chroma-service-latest
+          docker build -t mgn94/infrastructure-rag-llm:chroma-service-latest -f dockerfile.chroma .
+          docker push mgn94/infrastructure-rag-llm:chroma-service-latest
 
   deploy:
     name: Deploy
