@@ -1,3 +1,4 @@
+yml 
 name: CI/CD Pipeline
 
 on:
@@ -28,71 +29,34 @@ jobs:
       # Étape 3 : Construire et pousser les images Docker
       - name: Build and Push LLM Service Image
         run: |
-          docker build -t mgn94/infrastructure-rag-llm:llm-service-latest -f dockerfile.rag_llm .
-          docker push mgn94/infrastructure-rag-llm:llm-service-latest
+          docker build -t ykfly/projet:llm-service-latest -f dockerfile.rag_llm .
+          docker push ykfly/projet:llm-service-latest
 
       - name: Build and Push API Service Image
         run: |
-          docker build -t mgn94/infrastructure-rag-llm:api-service-latest -f dockerfile.api .
-          docker push mgn94/infrastructure-rag-llm:api-service-latest
+          docker build -t ykfly/projet:api-service-latest -f dockerfile.api .
+          docker push ykfly/projet:api-service-latest
 
       - name: Build and Push Frontend Service Image
         run: |
-          docker build -t mgn94/infrastructure-rag-llm:frontend-service-latest -f dockerfile.frontend .
-          docker push mgn94/infrastructure-rag-llm:frontend-service-latest
+          docker build -t ykfly/projet:frontend-service-latest -f dockerfile.frontend .
+          docker push ykfly/projet:frontend-service-latest
 
       - name: Build and Push Chroma Service Image
         run: |
-          docker build -t mgn94/infrastructure-rag-llm:chroma-service-latest -f dockerfile.chroma .
-          docker push mgn94/infrastructure-rag-llm:chroma-service-latest
+          docker build -t ykfly/projet:chroma-service-latest -f dockerfile.chroma .
+          docker push ykfly/projet:chroma-service-latest
 
-  deploy-infra:
-    name: Deploy Infrastructure with Terraform
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
     needs: build-and-push
 
     steps:
-      # Étape 1 : Vérifier le code
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Étape 2 : Installer Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.5.0
-
-      # Étape 3 : Initialiser Terraformss
-      - name: Terraform Init
-        run: terraform init
-        working-directory: terraform/
-
-      # Étape 4 : Planifier l'infrastructure
-      - name: Terraform Plan
-        run: terraform plan -out=tfplan
-        working-directory: terraform/
-        env:
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          TF_VAR_dockerhub_email: ${{ secrets.DOCKER_EMAIL }}
-          TF_VAR_dockerhub_username: ${{ secrets.DOCKER_USERNAME }}
-          TF_VAR_dockerhub_password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # Étape 5 : Appliquer l'infrastructure
-      - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
-        working-directory: terraform/
-        env:
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-  deploy-app:
-    name: Deploy Applications to AKS
-    runs-on: ubuntu-latest
-    needs: deploy-infra
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Deploy to Kubernetes
+      # Déploiement (adapter cette commande à votre méthode de déploiement)
+      - name: Deploy to Production
         run: |
-          kubectl apply -f kubernetes-manifests/ # Adapter selon vos manifests YAML
+          echo "Lancer les commandes de déploiement ici, par exemple via Docker Compose ou SSH."
