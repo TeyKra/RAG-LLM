@@ -46,16 +46,50 @@ jobs:
           docker build -t mgn94/infrastructure-rag-llm:chroma-service-latest -f dockerfile.chroma .
           docker push mgn94/infrastructure-rag-llm:chroma-service-latest
 
-  deploy:
-    name: Deploy
+  deploy-infra:
+    name: Deploy Infrastructure with Terraform
     runs-on: ubuntu-latest
     needs: build-and-push
+
+    steps:
+      # Étape 1 : Vérifier le code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Étape 2 : Installer Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      # Étape 3 : Initialiser Terraform
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform/
+
+      # Étape 4 : Planifier l'infrastructure
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: terraform/
+        env:
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Étape 5 : Appliquer l'infrastructure
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+        working-directory: terraform/
+        env:
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+  deploy-app:
+    name: Deploy Applications to AKS
+    runs-on: ubuntu-latest
+    needs: deploy-infra
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Déploiement (adapter cette commande à votre méthode de déploiement)
-      - name: Deploy to Production
+      - name: Deploy to Kubernetes
         run: |
-          echo "Lancer les commandes de déploiement ici, par exemple via Docker Compose ou SSH."
+          kubectl apply -f kubernetes-manifests/ # Adapter selon vos manifests YAML

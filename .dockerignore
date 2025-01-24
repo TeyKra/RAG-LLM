@@ -7,3 +7,5 @@
 # Ignorer les fichiers de cache Python
 __pycache__
 *.pyc
+# Ignorer les tfvars contenant les secrets
+*.tfvars

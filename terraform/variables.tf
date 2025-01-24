@@ -1,46 +1,62 @@
-#####################################
-# Variables
-#####################################
-
-# Nom de l'abonnement Azure
 variable "subscription_id" {
+  description = "L'ID de l'abonnement Azure"
   type        = string
-  description = "L'ID de l'abonnement Azure où déployer la solution."
 }
 
-# Nom du Resource Group
 variable "resource_group_name" {
+  description = "Nom du groupe de ressources"
   type        = string
-  description = "Le nom du Resource Group à créer."
   default     = "rg-rag-llm"
 }
 
-# Localisation (region) Azure
 variable "location" {
+  description = "Emplacement Azure"
   type        = string
-  description = "Région Azure où créer les ressources."
-  default     = "francecentral"
+  default     = "eastus"
 }
 
-# Nom du cluster AKS
-variable "aks_cluster_name" {
+variable "vnet_name" {
+  description = "Nom du Virtual Network"
   type        = string
-  description = "Le nom du cluster AKS."
+  default     = "vnet-rag-llm"
+}
+
+variable "subnet_name" {
+  description = "Nom du Subnet"
+  type        = string
+  default     = "aks-subnet"
+}
+
+variable "aks_cluster_name" {
+  description = "Nom du cluster AKS"
+  type        = string
   default     = "aks-rag-llm"
 }
 
-# Nombre de noeuds dans le pool par défaut
-variable "default_node_count" {
+variable "node_count" {
+  description = "Nombre de nœuds dans le pool"
   type        = number
-  description = "Nombre de nœuds dans le pool AKS par défaut."
-  default     = 2
+  default     = 3
 }
 
-# Type de VM pour les noeuds
-variable "default_node_vm_size" {
+variable "dockerhub_username" {
+  description = "Nom d'utilisateur Docker Hub"
   type        = string
-  description = "Type de VM pour le node pool AKS."
-  default     = "Standard_DS2_v2"
 }
 
+variable "dockerhub_password" {
+  description = "Mot de passe Docker Hub"
+  type        = string
+  sensitive   = true
+}
 
+variable "dockerhub_email" {
+  description = "Email associé à Docker Hub"
+  type        = string
+}
+
+variable "dockerhub_server" {
+  description = "Serveur Docker Hub (par défaut : index.docker.io)"
+  type        = string
+  default     = "https://index.docker.io/v1/"
+}
