@@ -2,7 +2,7 @@ import argparse
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_huggingface import HuggingFacePipeline
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from langchain.schema import Document
 from src.get_embedding import get_embedding_function
 from googletrans import Translator
@@ -32,10 +32,6 @@ Question:
 Answer:
 """
 
-import logging
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
-from langchain_huggingface import HuggingFacePipeline
-
 # Configuration du logger
 logging.basicConfig(
     level=logging.INFO,
@@ -44,43 +40,52 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class ModelLoader:
-    """
-    Singleton class for managing the loading of a pre-trained language model and tokenizer.
-    Ensures that the model and tokenizer are only initialized once.
-    """
     _instance = None
 
     def __new__(cls):
         if cls._instance is None:
-            # Initialize the singleton instance
             cls._instance = super(ModelLoader, cls).__new__(cls)
-            
+            logger.info("Initializing ModelLoader...")
+
             try:
-                logger.info("Loading tokenizer from checkpoint 'google/flan-t5-base'...")
-                cls._instance.tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-base")
-                logger.info("Tokenizer loaded successfully.")
+                MODEL_NAME = "tiiuae/falcon-7b-instruct"
 
-                logger.info("Loading model from checkpoint 'google/flan-t5-base'...")
-                cls._instance.model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-base")
-                logger.info("Model loaded successfully.")
+                logger.info(f"Loading tokenizer from checkpoint '{MODEL_NAME}'...")
+                cls._instance.tokenizer = AutoTokenizer.from_pretrained(
+                    MODEL_NAME,
+                    trust_remote_code=True
+                )
 
-                logger.info("Initializing text2text-generation pipeline...")
-                cls._instance.pipeline = pipeline(
-                    "text2text-generation",
+                logger.info(f"Loading Falcon model from checkpoint '{MODEL_NAME}'...")
+                cls._instance.model = AutoModelForCausalLM.from_pretrained(
+                    MODEL_NAME,
+                    trust_remote_code=True,
+                    device_map="auto",      # auto => GPU si dispo, sinon CPU
+                )
+
+                logger.info("Initializing text-generation pipeline...")
+                text_generation_pipeline = pipeline(
+                    task="text-generation",
                     model=cls._instance.model,
                     tokenizer=cls._instance.tokenizer,
-                    max_new_tokens=200,
+                    max_length=1024,       # Longueur max totale (contexte + tokens générés)
+                    max_new_tokens=256,
                     do_sample=True,
-                    top_k=30,
-                    top_p=0.8,
-                    temperature=0.5,
-                    pad_token_id=cls._instance.tokenizer.eos_token_id,
+                    top_k=50,
+                    top_p=0.9,
+                    temperature=0.7,
+                    pad_token_id=cls._instance.tokenizer.eos_token_id
                 )
-                cls._instance.llm = HuggingFacePipeline(pipeline=cls._instance.pipeline)
-                logger.info("Pipeline initialized successfully.")
+
+                cls._instance.llm = HuggingFacePipeline(
+                    pipeline=text_generation_pipeline
+                )
+                logger.info("Falcon 7B Instruct pipeline initialized successfully.")
+
             except Exception as e:
-                logger.error(f"Error during model initialization: {e}")
+                logger.error(f"Error during Falcon model initialization: {e}")
                 raise e
+
         return cls._instance
 
 def translate_to_english(text: str) -> str:
@@ -144,7 +149,7 @@ def query_rag(query_text: str) -> str:
 
     # Format the response with source information.
     sources = [doc.metadata.get("id", None) for doc, _score in results]
-    formatted_response = f"Answer:\n{translated_answer}\nSources: {sources}"
+    formatted_response = f"Answer:\n{translated_answer}\n\nSources:\n {sources}"
 
     # Log the final formatted response and sources.
     logger.info(f"Final Response:\n{formatted_response}")

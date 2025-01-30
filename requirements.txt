@@ -133,3 +133,4 @@ Werkzeug
 wrapt
 yarl
 zipp
+accelerate

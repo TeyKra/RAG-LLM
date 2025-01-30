@@ -7,27 +7,29 @@
   <title>RAG LLM Application</title>
 </head>
 <body>
-  <h1>RAG LLM Application</h1>
+  <div class="container">
+    <h1>RAG LLM Application</h1>
 
-  <section>
-    <h2>Populate Database</h2>
-    <form id="populate-form">
-      <button type="submit">Populate</button>
-    </form>
-    <p id="populate-response"></p>
-  </section>  
+    <section>
+      <h2>Populate Database</h2>
+      <form id="populate-form">
+        <button type="submit" class="btn">Populate</button>
+      </form>
+      <pre id="populate-response" class="response-box"></pre>
+    </section>  
 
-  <section>
-    <h2>Query Database</h2>
-    <form id="query-form">
-      <label>
-        Query:
-        <input type="text" name="query" required>
-      </label>
-      <button type="submit">Query</button>
-    </form>
-    <p id="query-response"></p>
-  </section>
+    <section>
+      <h2>Query Database</h2>
+      <form id="query-form">
+        <label>
+          Query:
+          <input type="text" name="query" required class="input-field">
+        </label>
+        <button type="submit" class="btn">Submit</button>
+      </form>
+      <pre id="query-response" class="response-box"></pre>
+    </section>
+  </div>
 
   <script src="scripts.js"></script>
 </body>
