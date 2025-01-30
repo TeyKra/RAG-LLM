@@ -1,3 +1,6 @@
+####################################
+# Provider Kubernetes + AKS
+####################################
 provider "kubernetes" {
   host                   = azurerm_kubernetes_cluster.aks.kube_config.0.host
   client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.client_certificate)
@@ -5,6 +8,9 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.cluster_ca_certificate)
 }
 
+####################################
+# Secret pour Docker Hub
+####################################
 resource "kubernetes_secret" "dockerhub" {
   metadata {
     name      = "dockerhub-secret"
@@ -12,31 +18,30 @@ resource "kubernetes_secret" "dockerhub" {
   }
 
   data = {
-    # On met directement la sortie de `jsonencode` (sans base64encode)
+    # On met directement la sortie de jsonencode
     ".dockerconfigjson" = jsonencode({
       auths = {
-        # vous pouvez laisser var.dockerhub_server comme clé
-        # ou la mettre en dur "https://index.docker.io/v1/" si vous préférez
         "${var.dockerhub_server}" = {
           username = var.dockerhub_username
           password = var.dockerhub_password
           email    = var.dockerhub_email
-          # Ici on peut garder base64encode pour le champ "auth" lui-même 
           auth     = base64encode("${var.dockerhub_username}:${var.dockerhub_password}")
         }
       }
     })
   }
-
   type = "kubernetes.io/dockerconfigjson"
 }
 
-
+####################################
+# Déploiement LLM
+####################################
 resource "kubernetes_deployment" "llm_service" {
   metadata {
-    name = "llm-service"
+    # On donne au déploiement le nom "llm"
+    name = "llm"
     labels = {
-      app = "llm-service"
+      app = "llm"
     }
   }
 
@@ -45,14 +50,14 @@ resource "kubernetes_deployment" "llm_service" {
 
     selector {
       match_labels = {
-        app = "llm-service"
+        app = "llm"
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "llm-service"
+          app = "llm"
         }
       }
 
@@ -62,7 +67,7 @@ resource "kubernetes_deployment" "llm_service" {
         }
 
         container {
-          name  = "llm-service"
+          name  = "llm"
           image = "mgn94/infrastructure-rag-llm:llm-service-latest"
           port {
             container_port = 5001
@@ -75,12 +80,13 @@ resource "kubernetes_deployment" "llm_service" {
 
 resource "kubernetes_service" "llm_service" {
   metadata {
-    name = "llm-service"
+    # On donne au service le nom "llm"
+    name = "llm"
   }
 
   spec {
     selector = {
-      app = "llm-service"
+      app = "llm"
     }
 
     port {
@@ -92,14 +98,15 @@ resource "kubernetes_service" "llm_service" {
   }
 }
 
-# Répétez les ressources de déploiement et de service pour les autres services (api, frontend, chroma)
-
-# Exemple pour le service API
+####################################
+# Déploiement API
+####################################
 resource "kubernetes_deployment" "api_service" {
   metadata {
-    name = "api-service"
+    # On donne au déploiement le nom "api"
+    name = "api"
     labels = {
-      app = "api-service"
+      app = "api"
     }
   }
 
@@ -108,14 +115,14 @@ resource "kubernetes_deployment" "api_service" {
 
     selector {
       match_labels = {
-        app = "api-service"
+        app = "api"
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "api-service"
+          app = "api"
         }
       }
 
@@ -125,7 +132,7 @@ resource "kubernetes_deployment" "api_service" {
         }
 
         container {
-          name  = "api-service"
+          name  = "api"
           image = "mgn94/infrastructure-rag-llm:api-service-latest"
           port {
             container_port = 5002
@@ -138,12 +145,13 @@ resource "kubernetes_deployment" "api_service" {
 
 resource "kubernetes_service" "api_service" {
   metadata {
-    name = "api-service"
+    # On donne au service le nom "api"
+    name = "api"
   }
 
   spec {
     selector = {
-      app = "api-service"
+      app = "api"
     }
 
     port {
@@ -155,12 +163,15 @@ resource "kubernetes_service" "api_service" {
   }
 }
 
-# Exemple pour le service Chroma
+####################################
+# Déploiement Chroma
+####################################
 resource "kubernetes_deployment" "chroma_service" {
   metadata {
-    name = "chroma-service"
+    # On donne au déploiement le nom "chroma"
+    name = "chroma"
     labels = {
-      app = "chroma-service"
+      app = "chroma"
     }
   }
 
@@ -169,14 +180,14 @@ resource "kubernetes_deployment" "chroma_service" {
 
     selector {
       match_labels = {
-        app = "chroma-service"
+        app = "chroma"
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "chroma-service"
+          app = "chroma"
         }
       }
 
@@ -186,7 +197,7 @@ resource "kubernetes_deployment" "chroma_service" {
         }
 
         container {
-          name  = "chroma-service"
+          name  = "chroma"
           image = "mgn94/infrastructure-rag-llm:chroma-service-latest"
           port {
             container_port = 8000
@@ -199,12 +210,13 @@ resource "kubernetes_deployment" "chroma_service" {
 
 resource "kubernetes_service" "chroma_service" {
   metadata {
-    name = "chroma-service"
+    # On donne au service le nom "chroma"
+    name = "chroma"
   }
 
   spec {
     selector = {
-      app = "chroma-service"
+      app = "chroma"
     }
 
     port {
@@ -216,12 +228,15 @@ resource "kubernetes_service" "chroma_service" {
   }
 }
 
-# Déploiement du Frontend avec LoadBalancer
+####################################
+# Déploiement Frontend avec LoadBalancer
+####################################
 resource "kubernetes_deployment" "frontend_service" {
   metadata {
-    name = "frontend-service"
+    # On donne au déploiement le nom "frontend"
+    name = "frontend"
     labels = {
-      app = "frontend-service"
+      app = "frontend"
     }
   }
 
@@ -230,14 +245,14 @@ resource "kubernetes_deployment" "frontend_service" {
 
     selector {
       match_labels = {
-        app = "frontend-service"
+        app = "frontend"
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "frontend-service"
+          app = "frontend"
         }
       }
 
@@ -247,7 +262,7 @@ resource "kubernetes_deployment" "frontend_service" {
         }
 
         container {
-          name  = "frontend-service"
+          name  = "frontend"
           image = "mgn94/infrastructure-rag-llm:frontend-service-latest"
           port {
             container_port = 5003
@@ -260,12 +275,13 @@ resource "kubernetes_deployment" "frontend_service" {
 
 resource "kubernetes_service" "frontend_service" {
   metadata {
-    name = "frontend-service"
+    # On donne au service le nom "frontend"
+    name = "frontend"
   }
 
   spec {
     selector = {
-      app = "frontend-service"
+      app = "frontend"
     }
 
     port {

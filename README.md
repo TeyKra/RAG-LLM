@@ -104,6 +104,19 @@ Terraform apply
 Terraform destroy
 ```
 
+## Azure 
+Se connecter à azure :
+az login
+
+update les credentials kub local :
+az aks get-credentials --resource-group rg-rag-llm --name aks-rag-llm
+
+vérifier la liste des services :
+kubectl get svc
+
+se connecter au frontend via ip publique:
+http://52.xx.xx.xx:5003
+
 
 ## Ressources supplémentaires
 

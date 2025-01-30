@@ -4,16 +4,17 @@ FROM python:3.10-slim
 RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-# Ajouter /app au PYTHONPATH
 ENV PYTHONPATH=/app
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier TOUT le dossier `src` et son contenu dans /app/src sauf api.py
+# Copie du code source
 COPY src/__init__.py src/get_embedding.py src/populate_database.py src/query_data.py src/rag_llm_services.py /app/src/
 
-EXPOSE 5001
+# Copie des PDF dans /app/data
+RUN mkdir /app/data
+COPY data/*.pdf /app/data/
 
-# Lancer le service LLM
+EXPOSE 5001
 CMD ["python", "src/rag_llm_services.py"]
