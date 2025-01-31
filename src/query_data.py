@@ -1,13 +1,13 @@
 import argparse
+import logging
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
-from langchain_huggingface import HuggingFacePipeline
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from langchain.schema import Document
 from src.get_embedding import get_embedding_function
 from googletrans import Translator
+import torch
 
-import logging
 # Configuration du logger
 logging.basicConfig(
     level=logging.INFO,
@@ -17,76 +17,67 @@ logger = logging.getLogger(__name__)
 
 # Constants
 CHROMA_PATH = "chroma"  # Path for Chroma's persistent database.
+MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.1"  # Nouveau modèle Mistral
 
 PROMPT_TEMPLATE = """
-You are an expert assistant. Use only the following context to answer the user's question.
-DO NOT quote or restate the entire context verbatim.
-Provide a concise, standalone answer. If the context does not contain enough information, say so.
+### Instruction:
+You are an expert AI assistant specialized in retrieving information from documents. 
+Use the provided context to answer the question concisely and accurately. 
+Do NOT make up answers.
 
-Context:
+### Context:
 {context}
 
-Question:
+### Question:
 {question}
 
-Answer:
+### Answer:
 """
 
-# Configuration du logger
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
-
 class ModelLoader:
+    """
+    Singleton class for managing the loading of a pre-trained language model and tokenizer.
+    Ensures that the model and tokenizer are only initialized once.
+    """
     _instance = None
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(ModelLoader, cls).__new__(cls)
-            logger.info("Initializing ModelLoader...")
-
+            
             try:
-                MODEL_NAME = "tiiuae/falcon-7b-instruct"
-
+                device = "cuda" if torch.cuda.is_available() else "cpu"
+                
                 logger.info(f"Loading tokenizer from checkpoint '{MODEL_NAME}'...")
-                cls._instance.tokenizer = AutoTokenizer.from_pretrained(
-                    MODEL_NAME,
-                    trust_remote_code=True
-                )
+                cls._instance.tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+                logger.info("Tokenizer loaded successfully.")
 
-                logger.info(f"Loading Falcon model from checkpoint '{MODEL_NAME}'...")
+                logger.info(f"Loading model from checkpoint '{MODEL_NAME}'...")
                 cls._instance.model = AutoModelForCausalLM.from_pretrained(
                     MODEL_NAME,
-                    trust_remote_code=True,
-                    device_map="auto",      # auto => GPU si dispo, sinon CPU
+                    device_map="auto",
+                    torch_dtype=torch.float16 if device == "cuda" else torch.float32
                 )
+                logger.info("Model loaded successfully.")
 
-                logger.info("Initializing text-generation pipeline...")
-                text_generation_pipeline = pipeline(
-                    task="text-generation",
+                logger.info("Initializing text generation pipeline...")
+                cls._instance.pipeline = pipeline(
+                    "text-generation",
                     model=cls._instance.model,
                     tokenizer=cls._instance.tokenizer,
-                    max_length=1024,       # Longueur max totale (contexte + tokens générés)
-                    max_new_tokens=256,
+                    max_new_tokens=512,
                     do_sample=True,
-                    top_k=50,
-                    top_p=0.9,
-                    temperature=0.7,
-                    pad_token_id=cls._instance.tokenizer.eos_token_id
+                    top_k=30,
+                    top_p=0.8,
+                    temperature=0.5,
+                    pad_token_id=cls._instance.tokenizer.eos_token_id,
                 )
-
-                cls._instance.llm = HuggingFacePipeline(
-                    pipeline=text_generation_pipeline
-                )
-                logger.info("Falcon 7B Instruct pipeline initialized successfully.")
-
+                logger.info("Pipeline initialized successfully.")
             except Exception as e:
-                logger.error(f"Error during Falcon model initialization: {e}")
+                logger.error(f"Error during model initialization: {e}")
                 raise e
-
         return cls._instance
+
 
 def translate_to_english(text: str) -> str:
     """
@@ -103,8 +94,9 @@ def translate_to_english(text: str) -> str:
         translation = translator.translate(text, src='auto', dest='en')
         return translation.text
     except Exception as e:
-        print(f"Translation Error: {e}")
+        logger.error(f"Translation Error: {e}")
         return text
+
 
 def query_rag(query_text: str) -> str:
     """
@@ -128,20 +120,16 @@ def query_rag(query_text: str) -> str:
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
 
     # Build the prompt using a template.
-    prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-    prompt = prompt_template.format(context=context_text, question=query_text)
+    prompt = PROMPT_TEMPLATE.format(context=context_text, question=query_text)
 
     # Generate a response using the preloaded model.
     model_loader = ModelLoader()
-    llm = model_loader.llm
-    response_text = llm.invoke(prompt)
+    llm = model_loader.pipeline
+    response = llm(prompt, max_new_tokens=512, return_full_text=False)
 
     # Extract the answer portion of the response.
-    if "Answer:" in response_text:
-        answer = response_text.split("Answer:")[1].strip()
-    else:
-        answer = response_text.strip()
-
+    answer = response[0]['generated_text'].split("### Answer:")[-1].strip()
+    
     # Translate the generated answer to English.
     logger.info(f"Generated Response (Before Translation): {answer}")
     translated_answer = translate_to_english(answer)
@@ -163,4 +151,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Query a retrieval-augmented generation system.")
     parser.add_argument("query_text", type=str, help="The query text to process.")
     args = parser.parse_args()
-    query_rag(args.query_text)
+    print(query_rag(args.query_text))
