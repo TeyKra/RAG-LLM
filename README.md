@@ -115,10 +115,12 @@ vérifier la liste des services :
 kubectl get svc
 
 se connecter au frontend via ip publique:
-http://52.xx.xx.xx:5003
+http://EXTERNAL_IP:5003
 
+kubectl get service frontend -o wide
 
 ## Ressources supplémentaires
 
 - [Documentation officielle de Docker](https://docs.docker.com/)
 
+ssh-keygen -t rsa -b 4096 -C "votre.email@example.com"

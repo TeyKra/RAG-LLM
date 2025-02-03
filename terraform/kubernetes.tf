@@ -1,6 +1,3 @@
-####################################
-# Provider Kubernetes + AKS
-####################################
 provider "kubernetes" {
   host                   = azurerm_kubernetes_cluster.aks.kube_config.0.host
   client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.client_certificate)
@@ -8,9 +5,6 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.cluster_ca_certificate)
 }
 
-####################################
-# Secret pour Docker Hub
-####################################
 resource "kubernetes_secret" "dockerhub" {
   metadata {
     name      = "dockerhub-secret"
@@ -18,7 +12,6 @@ resource "kubernetes_secret" "dockerhub" {
   }
 
   data = {
-    # On met directement la sortie de jsonencode
     ".dockerconfigjson" = jsonencode({
       auths = {
         "${var.dockerhub_server}" = {
@@ -30,15 +23,13 @@ resource "kubernetes_secret" "dockerhub" {
       }
     })
   }
+
   type = "kubernetes.io/dockerconfigjson"
 }
 
-####################################
-# Déploiement LLM
-####################################
+# Déploiement du service LLM
 resource "kubernetes_deployment" "llm_service" {
   metadata {
-    # On donne au déploiement le nom "llm"
     name = "llm"
     labels = {
       app = "llm"
@@ -80,7 +71,6 @@ resource "kubernetes_deployment" "llm_service" {
 
 resource "kubernetes_service" "llm_service" {
   metadata {
-    # On donne au service le nom "llm"
     name = "llm"
   }
 
@@ -98,12 +88,9 @@ resource "kubernetes_service" "llm_service" {
   }
 }
 
-####################################
-# Déploiement API
-####################################
+# Déploiement du service API
 resource "kubernetes_deployment" "api_service" {
   metadata {
-    # On donne au déploiement le nom "api"
     name = "api"
     labels = {
       app = "api"
@@ -145,7 +132,6 @@ resource "kubernetes_deployment" "api_service" {
 
 resource "kubernetes_service" "api_service" {
   metadata {
-    # On donne au service le nom "api"
     name = "api"
   }
 
@@ -163,12 +149,9 @@ resource "kubernetes_service" "api_service" {
   }
 }
 
-####################################
-# Déploiement Chroma
-####################################
+# Déploiement du service Chroma
 resource "kubernetes_deployment" "chroma_service" {
   metadata {
-    # On donne au déploiement le nom "chroma"
     name = "chroma"
     labels = {
       app = "chroma"
@@ -210,7 +193,6 @@ resource "kubernetes_deployment" "chroma_service" {
 
 resource "kubernetes_service" "chroma_service" {
   metadata {
-    # On donne au service le nom "chroma"
     name = "chroma"
   }
 
@@ -228,12 +210,9 @@ resource "kubernetes_service" "chroma_service" {
   }
 }
 
-####################################
-# Déploiement Frontend avec LoadBalancer
-####################################
+# Déploiement du Frontend avec LoadBalancer interne (IP statique)
 resource "kubernetes_deployment" "frontend_service" {
   metadata {
-    # On donne au déploiement le nom "frontend"
     name = "frontend"
     labels = {
       app = "frontend"
@@ -275,8 +254,12 @@ resource "kubernetes_deployment" "frontend_service" {
 
 resource "kubernetes_service" "frontend_service" {
   metadata {
-    # On donne au service le nom "frontend"
     name = "frontend"
+    annotations = {
+      "service.beta.kubernetes.io/azure-load-balancer-internal"         = "true"
+      "service.beta.kubernetes.io/azure-load-balancer-internal-subnet"     = "aks-subnet"
+      "service.beta.kubernetes.io/azure-load-balancer-resource-group"      = azurerm_kubernetes_cluster.aks.node_resource_group
+    }
   }
 
   spec {
@@ -289,6 +272,9 @@ resource "kubernetes_service" "frontend_service" {
       target_port = 5003
     }
 
-    type = "LoadBalancer"
+    type             = "LoadBalancer"
+    load_balancer_ip = "10.0.1.100"  # IP statique dans le subnet "aks-subnet"
   }
+
+  depends_on = [azurerm_kubernetes_cluster.aks]
 }

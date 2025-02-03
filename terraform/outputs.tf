@@ -13,3 +13,8 @@ output "kube_config" {
   value       = azurerm_kubernetes_cluster.aks.kube_config_raw
   sensitive   = true
 }
+
+output "bastion_public_ip" {
+  description = "Adresse IP publique du Bastion Host"
+  value       = azurerm_public_ip.bastion.ip_address
+}

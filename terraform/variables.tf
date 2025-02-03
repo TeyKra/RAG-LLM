@@ -12,7 +12,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Emplacement Azure"
   type        = string
-  default     = "eastus"
+  default     = "westeurope"
 }
 
 variable "vnet_name" {
@@ -22,7 +22,7 @@ variable "vnet_name" {
 }
 
 variable "subnet_name" {
-  description = "Nom du Subnet"
+  description = "Nom du Subnet (utilisé pour AKS)"
   type        = string
   default     = "aks-subnet"
 }
@@ -36,7 +36,7 @@ variable "aks_cluster_name" {
 variable "node_count" {
   description = "Nombre de nœuds dans le pool"
   type        = number
-  default     = 3
+  default     = 1
 }
 
 variable "dockerhub_username" {

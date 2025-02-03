@@ -32,10 +32,6 @@ Question:
 Answer:
 """
 
-import logging
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
-from langchain_huggingface import HuggingFacePipeline
-
 # Configuration du logger
 logging.basicConfig(
     level=logging.INFO,
