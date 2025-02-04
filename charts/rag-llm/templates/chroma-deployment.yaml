@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chroma-deployment
+  labels:
+    app: chroma
+spec:
+  replicas: {{ .Values.chroma.replicas }}
+  selector:
+    matchLabels:
+      app: chroma
+  template:
+    metadata:
+      labels:
+        app: chroma
+      annotations:
+{{- if .Values.prometheusScrape.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.chroma.port }}"
+        prometheus.io/path: "{{ .Values.chroma.metricsPath }}"
+        prometheus.io/scheme: "{{ .Values.prometheusScrape.scheme }}"
+{{- end }}
+    spec:
+      containers:
+        - name: chroma
+          image: "{{ .Values.chroma.image }}"
+          ports:
+            - containerPort: {{ .Values.chroma.port }}
+      imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+      - name: {{ . }}
+{{- end }}

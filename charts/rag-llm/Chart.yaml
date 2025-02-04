@@ -1,0 +1,14 @@
+apiVersion: v2
+name: rag-llm
+description: Helm chart pour déployer un RAG LLM, ses microservices et la stack monitoring
+version: 0.1.0
+
+# -- Dépendances pour Prometheus et Grafana
+dependencies:
+  - name: prometheus
+    version: "~15.0.0" # ou plus récent si besoin
+    repository: "https://prometheus-community.github.io/helm-charts"
+
+  - name: grafana
+    version: "~7.0.0" # Utilisez une version >= 7.0.0 pour éviter la PSP
+    repository: "https://grafana.github.io/helm-charts"

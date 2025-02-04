@@ -1,0 +1,91 @@
+# values.yaml
+
+# ------------------------------------------------------------
+# 1) Configuration de vos microservices
+# ------------------------------------------------------------
+api:
+  image: "mgn94/infrastructure-rag-llm:api-service-latest"
+  replicas: 1
+  port: 5002
+  metricsPath: "/metrics"
+
+chroma:
+  image: "mgn94/infrastructure-rag-llm:chroma-service-latest"
+  replicas: 1
+  port: 8000
+  metricsPath: "/metrics"
+
+frontend:
+  image: "mgn94/infrastructure-rag-llm:frontend-service-latest"
+  replicas: 1
+  port: 5003
+  serviceType: LoadBalancer
+  metricsPath: "/metrics"
+
+llm:
+  image: "mgn94/infrastructure-rag-llm:llm-service-latest"
+  replicas: 1
+  port: 5001
+  metricsPath: "/metrics"
+
+# -- Secrets Docker (pull images)
+imagePullSecrets:
+  - name: my-registry-secret
+
+# ------------------------------------------------------------
+# 2) Paramètres Prometheus (annotations de scrape)
+# ------------------------------------------------------------
+prometheusScrape:
+  enabled: true # Active/désactive l’ajout d’annotations sur les pods
+  path: "/metrics"
+  scheme: "http"
+
+# ------------------------------------------------------------
+# 3) Configuration du chart Prometheus
+# ------------------------------------------------------------
+prometheus:
+  # Désactive la création de PSP & RBAC obsolète
+  rbac:
+    create: true # Laisser à true si vous voulez la gestion RBAC de Prometheus
+    pspEnabled: false # Eviter la création de PodSecurityPolicy
+
+  server:
+    service:
+      type: ClusterIP
+    # Désactive la PSP côté server
+    rbac:
+      pspEnabled: false
+
+  # Si besoin :
+  # extraScrapeConfigs: |
+  #   - job_name: "rag-llm-extra"
+  #     static_configs:
+  #       - targets: ["api:5002","chroma:8000","llm:5001","frontend:5003"]
+  #     metrics_path: /metrics
+
+# ------------------------------------------------------------
+# 4) Configuration du chart Grafana
+# ------------------------------------------------------------
+grafana:
+  service:
+    type: LoadBalancer # Expose Grafana en externe (ou NodePort, etc.)
+  adminUser: admin
+  adminPassword: admin
+  persistence:
+    enabled: false
+
+  # Désactive la création de PSP + RBAC obsolète
+  rbac:
+    create: false
+    pspEnabled: false
+
+  # Création automatique d'un datasource Prometheus
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://rag-llm-prometheus-server.default.svc.cluster.local
+          access: proxy
+          isDefault: true
