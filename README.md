@@ -124,3 +124,29 @@ kubectl get service frontend -o wide
 - [Documentation officielle de Docker](https://docs.docker.com/)
 
 ssh-keygen -t rsa -b 4096 -C "votre.email@example.com"
+
+MINIKUBE 
+minikube start 
+
+docker logout
+docker login
+
+kubectl create secret generic my-registry-secret \
+    --from-file=.dockerconfigjson=$HOME/.docker/config.json \
+    --type=kubernetes.io/dockerconfigjson
+
+kubectl apply -f k8s
+
+kubectl get pods
+
+minikube service frontend
+
+minikube destroy
+Avec HELM:
+cd charts/rag-llm
+
+helm install rag-llm .
+
+kubectl get pods
+
+minikube service frontend 

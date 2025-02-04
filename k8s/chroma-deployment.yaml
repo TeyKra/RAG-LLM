@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chroma-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chroma
+  template:
+    metadata:
+      labels:
+        app: chroma
+    spec:
+      containers:
+        - name: chroma
+          image: mgn94/infrastructure-rag-llm:chroma-service-latest
+          ports:
+            - containerPort: 8000
+      imagePullSecrets:
+        - name: my-registry-secret

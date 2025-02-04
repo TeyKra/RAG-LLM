@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llm
+  template:
+    metadata:
+      labels:
+        app: llm
+    spec:
+      containers:
+        - name: llm
+          image: "mgn94/infrastructure-rag-llm:llm-service-latest"
+          ports:
+            - containerPort: 5001
+          env:
+            - name: PYTHONPATH
+              value: /app
+      imagePullSecrets:
+        - name: my-registry-secret
