@@ -150,3 +150,12 @@ helm install rag-llm .
 kubectl get pods
 
 minikube service frontend 
+
+Grapha & prometheus 
+kubectl port-forward service/rag-llm-grafana 3000:80
+
+kubectl port-forward service/rag-llm-prometheus-server 9090:80
+
+se rendre sur localhost:3000/login pour grafana et localhost:9090 pour prometheus 
+
+
