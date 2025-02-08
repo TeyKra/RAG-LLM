@@ -1,8 +1,11 @@
 # Infrastructure RAG LLM
 
+---
 ## Project Demonstration
-Watch the demonstration on youtubue : 
+Watch the demonstration on youtube : 
 📹 **[Watch Video](https://youtu.be/J8PcfdjdevA)** 
+
+---
 
 ## Table of Contents
 - [Project Architecture](#project-architecture)
@@ -100,8 +103,10 @@ Ensure you have the following installed before running this project:
 - **Helm**: [Installation guide](https://helm.sh/docs/helm/helm_install/)
 - **Terraform**: [Installation guide](https://developer.hashicorp.com/terraform/install)
 - **Azure CLI**: [Installation guide](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli/)
-- **GitHub**: [Usage guide](https://github.com/)
 - **Git**: [Installation guide](https://git-scm.com/downloads)
+
+Make sure you have an account:
+- **GitHub**: [Usage guide](https://github.com/)
 - **DockerHub**: [Usage guide](https://hub.docker.com/)
 
 ---
@@ -115,7 +120,7 @@ This project allows you to deploy your **RAG LLM container services** in differe
 ### 1. Deployment using Docker
 
 You can deploy the project using **Docker & Docker Desktop** only.  
-**Don't forget to adapt the code to your own settings.**
+**Don't forget to adapt the code (dockerfile, docker-compose) to your own settings.**
 
 #### Steps:
 
@@ -168,9 +173,7 @@ You can deploy the project using **Docker & Docker Desktop** only.
 ### 2. On-Premises Deployment
 
 You can deploy the project using **GitHub, Docker, DockerHub, Kubernetes, and HELM**.  
-**Don't forget to adapt the code to your own settings.**
-
----
+**Don't forget to adapt the code (dockerfile, docker-compose, k8s yaml scripts, charts/rag-llm/templates scripts, .github/workflows/ci-cd.yml) to your own settings.**
 
 #### Prerequisites for On-Premises
 
@@ -187,11 +190,8 @@ Before starting, ensure you have:
   - `helm`
   - `git`
 
----
 
 #### Deployment Steps
-
----
 
 ##### Deploy with k8s (Kubernetes)
 
@@ -269,8 +269,6 @@ You can also deploy this solution using **Helm** instead of **k8s** :
    - Open Grafana at: [http://localhost:3000/login](http://localhost:3000/login)  
    - Open Prometheus at: [http://localhost:9090](http://localhost:9090)
 
----
-
 ##### Destroying the Deployment
 
 If you want to remove all deployments, use:
@@ -284,8 +282,21 @@ minikube delete
 
 ### 3. Cloud Deployment
 
-You can deploy the project on the **Azure Cloud** using **GitHub, Docker, DockerHub, and Azure**.  
+You can deploy the project on the **Azure Cloud** using **GitHub, Docker, DockerHub, Terraform and Azure**.  
 **Don't forget to adapt the code to your own settings.**
+
+#### Prerequisites for On-Premises
+
+Before starting, ensure you have:
+
+- A **GitHub account** with a repository ready for use.
+- A **DockerHub account** with a repository ready for use.
+- The following dependencies installed:
+  - `python`
+  - `terraform`
+  - `azure`
+  - `docker`
+  - `git`
 
 1. **Configure Your GitHub Repository**  
    1. Navigate to the `.github/workflows` folder.  
@@ -299,31 +310,32 @@ You can deploy the project on the **Azure Cloud** using **GitHub, Docker, Docker
 3. **Create and Configure `terraform.tfvars`**  
    1. Open a terminal, go to the `terraform` folder.  
    2. Create a `terraform.tfvars` file and add your credentials:
-      ```hcl
+      ```bash
       dockerhub_username = ""
       dockerhub_password = ""
       dockerhub_email    = ""
       subscription_id    = ""
       ```
+4. **Adapt the `kubernetes.tf` script with your own DockerHub images path information.**
 
-4. **Initialize Terraform**  
+5. **Initialize Terraform**  
    ```bash
    terraform init
    ```
 
-5. **Check the Deployment Plan**  
+6. **Check the Deployment Plan**  
    ```bash
    terraform plan
    ```
    - Ensure there are no errors.
 
-6. **Deploy Your Solution**  
+7. **Deploy Your Solution**  
    ```bash
    terraform apply
    ```
    - Confirm when prompted.
 
-7. **Wait for Deployment to Complete**  
+8. **Wait for Deployment to Complete**  
    - Ensure Terraform finishes deploying all resources.
 
 8. **Access the Frontend Services**  
