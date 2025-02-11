@@ -1,44 +1,46 @@
+# Kubernetes Deployment manifest for the Frontend application
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-deployment
+  name: frontend-deployment          # Name of the deployment for the frontend service
   labels:
-    app: frontend
+    app: frontend                    # Label to identify the frontend application
 spec:
-  replicas: {{ .Values.frontend.replicas }}
+  replicas: {{ .Values.frontend.replicas }}  # Number of replica pods to run, defined via Helm values
   selector:
     matchLabels:
-      app: frontend
+      app: frontend                  # Selector to match pods with the label "app: frontend"
   template:
     metadata:
       labels:
-        app: frontend
+        app: frontend                # Labels assigned to the pods created by this deployment
       annotations:
-{{- if .Values.prometheusScrape.enabled }}
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "{{ .Values.frontend.port }}"
-        prometheus.io/path: "{{ .Values.frontend.metricsPath }}"
-        prometheus.io/scheme: "{{ .Values.prometheusScrape.scheme }}"
-{{- end }}
+        {{- if .Values.prometheusScrape.enabled }}
+        # If Prometheus scraping is enabled, add annotations to enable metric scraping:
+        prometheus.io/scrape: "true"                      # Enable scraping of metrics
+        prometheus.io/port: "{{ .Values.frontend.port }}" # Port for Prometheus to scrape metrics from
+        prometheus.io/path: "{{ .Values.frontend.metricsPath }}"  # Endpoint path where metrics are exposed
+        prometheus.io/scheme: "{{ .Values.prometheusScrape.scheme }}"  # Scheme (http/https) used for scraping
+        {{- end }}
     spec:
       containers:
-        - name: frontend
-          image: "{{ .Values.frontend.image }}"
+        - name: frontend                        # Name of the container running the frontend application
+          image: "{{ .Values.frontend.image }}"   # Docker image for the frontend, set via Helm values
           ports:
-            - containerPort: {{ .Values.frontend.port }}
+            - containerPort: {{ .Values.frontend.port }}  # Port that the container exposes
           livenessProbe:
             httpGet:
-              path: /
-              port: {{ .Values.frontend.port }}
-            initialDelaySeconds: 5
-            periodSeconds: 10
+              path: /                          # HTTP path used by the liveness probe to check container health
+              port: {{ .Values.frontend.port }}  # Port used for the liveness check
+            initialDelaySeconds: 5             # Delay before starting the liveness probe checks
+            periodSeconds: 10                  # Interval between liveness probe checks
           readinessProbe:
             httpGet:
-              path: /
-              port: {{ .Values.frontend.port }}
-            initialDelaySeconds: 5
-            periodSeconds: 10
+              path: /                          # HTTP path used by the readiness probe to determine container readiness
+              port: {{ .Values.frontend.port }}  # Port used for the readiness check
+            initialDelaySeconds: 5             # Delay before starting the readiness probe checks
+            periodSeconds: 10                  # Interval between readiness probe checks
       imagePullSecrets:
-{{- range .Values.imagePullSecrets }}
-      - name: {{ . }}
-{{- end }}
+        {{- range .Values.imagePullSecrets }}
+      - name: {{ . }}                          # Name of an image pull secret for accessing private container registries
+        {{- end }}

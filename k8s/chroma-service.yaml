@@ -1,12 +1,13 @@
-apiVersion: v1
-kind: Service
+# Kubernetes Service manifest for the Chroma service
+apiVersion: v1               # API version for the Service resource
+kind: Service              # Specifies that this resource is a Service
 metadata:
-  name: chroma
+  name: chroma            # Name of the service
 spec:
   selector:
-    app: chroma
+    app: chroma           # Selects pods with the label "app: chroma" to route traffic to
   ports:
-    - protocol: TCP
-      port: 8000
-      targetPort: 8000
-  type: ClusterIP
+    - protocol: TCP       # Specifies that the service uses the TCP protocol
+      port: 8000          # The port on which the service is exposed within the cluster
+      targetPort: 8000    # The port on the pod to which the traffic is forwarded (must match the container's port)
+  type: ClusterIP         # Service type that exposes the service on an internal cluster IP

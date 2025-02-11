@@ -1,3 +1,4 @@
+# Configure the Kubernetes provider using the AKS cluster's kubeconfig.
 provider "kubernetes" {
   host                   = azurerm_kubernetes_cluster.aks.kube_config.0.host
   client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.client_certificate)
@@ -5,10 +6,11 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.cluster_ca_certificate)
 }
 
+# Create a Kubernetes secret for Docker Hub credentials.
 resource "kubernetes_secret" "dockerhub" {
   metadata {
-    name      = "dockerhub-secret"
-    namespace = "default"
+    name      = "dockerhub-secret"   # Name of the secret.
+    namespace = "default"            # Namespace where the secret will be created.
   }
 
   data = {
@@ -18,50 +20,54 @@ resource "kubernetes_secret" "dockerhub" {
           username = var.dockerhub_username
           password = var.dockerhub_password
           email    = var.dockerhub_email
+          # Encode the "username:password" pair in Base64.
           auth     = base64encode("${var.dockerhub_username}:${var.dockerhub_password}")
         }
       }
     })
   }
 
-  type = "kubernetes.io/dockerconfigjson"
+  type = "kubernetes.io/dockerconfigjson"  # Specify the secret type for Docker credentials.
 }
 
-# Déploiement du service LLM
+# -------------------------------
+# Deployment of the LLM service
+# -------------------------------
 resource "kubernetes_deployment" "llm_service" {
   metadata {
-    name = "llm"
+    name = "llm"    # Name of the deployment.
     labels = {
-      app = "llm"
+      app = "llm"   # Label to identify pods belonging to the LLM service.
     }
   }
 
   spec {
-    replicas = 1
+    replicas = 1    # Number of pod replicas.
 
     selector {
       match_labels = {
-        app = "llm"
+        app = "llm"  # Selector to match pods with label "app: llm".
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "llm"
+          app = "llm"  # Labels applied to the pod template.
         }
       }
 
       spec {
+        # Reference the Docker Hub secret for pulling images.
         image_pull_secrets {
           name = kubernetes_secret.dockerhub.metadata[0].name
         }
 
         container {
-          name  = "llm"
-          image = "mgn94/infrastructure-rag-llm:llm-service-latest"
+          name  = "llm"  # Name of the container.
+          image = "mgn94/infrastructure-rag-llm:llm-service-latest"  # Container image.
           port {
-            container_port = 5001
+            container_port = 5001  # Port exposed by the container.
           }
         }
       }
@@ -69,60 +75,64 @@ resource "kubernetes_deployment" "llm_service" {
   }
 }
 
+# Service to expose the LLM deployment internally within the cluster.
 resource "kubernetes_service" "llm_service" {
   metadata {
-    name = "llm"
+    name = "llm"   # Name of the service.
   }
 
   spec {
     selector = {
-      app = "llm"
+      app = "llm"  # Select pods with label "app: llm".
     }
 
     port {
-      port        = 5001
-      target_port = 5001
+      port        = 5001  # Port on which the service is exposed.
+      target_port = 5001  # Port on the pod to which traffic is forwarded.
     }
 
-    type = "ClusterIP"
+    type = "ClusterIP"  # Internal cluster IP service.
   }
 }
 
-# Déploiement du service API
+# -------------------------------
+# Deployment of the API service
+# -------------------------------
 resource "kubernetes_deployment" "api_service" {
   metadata {
-    name = "api"
+    name = "api"   # Name of the deployment.
     labels = {
-      app = "api"
+      app = "api"  # Label to identify pods belonging to the API service.
     }
   }
 
   spec {
-    replicas = 1
+    replicas = 1  # Number of pod replicas.
 
     selector {
       match_labels = {
-        app = "api"
+        app = "api"  # Selector to match pods with label "app: api".
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "api"
+          app = "api"  # Labels applied to the pod template.
         }
       }
 
       spec {
+        # Use the Docker Hub secret for image pulling.
         image_pull_secrets {
           name = kubernetes_secret.dockerhub.metadata[0].name
         }
 
         container {
-          name  = "api"
-          image = "mgn94/infrastructure-rag-llm:api-service-latest"
+          name  = "api"  # Name of the container.
+          image = "mgn94/infrastructure-rag-llm:api-service-latest"  # Container image.
           port {
-            container_port = 5002
+            container_port = 5002  # Port exposed by the container.
           }
         }
       }
@@ -130,60 +140,64 @@ resource "kubernetes_deployment" "api_service" {
   }
 }
 
+# Service to expose the API deployment internally.
 resource "kubernetes_service" "api_service" {
   metadata {
-    name = "api"
+    name = "api"  # Name of the service.
   }
 
   spec {
     selector = {
-      app = "api"
+      app = "api"  # Select pods with label "app: api".
     }
 
     port {
-      port        = 5002
-      target_port = 5002
+      port        = 5002  # Port on which the service is exposed.
+      target_port = 5002  # Port on the pod to which traffic is forwarded.
     }
 
-    type = "ClusterIP"
+    type = "ClusterIP"  # Internal cluster IP service.
   }
 }
 
-# Déploiement du service Chroma
+# -------------------------------
+# Deployment of the Chroma service
+# -------------------------------
 resource "kubernetes_deployment" "chroma_service" {
   metadata {
-    name = "chroma"
+    name = "chroma"   # Name of the deployment.
     labels = {
-      app = "chroma"
+      app = "chroma"  # Label to identify pods belonging to the Chroma service.
     }
   }
 
   spec {
-    replicas = 1
+    replicas = 1  # Number of pod replicas.
 
     selector {
       match_labels = {
-        app = "chroma"
+        app = "chroma"  # Selector to match pods with label "app: chroma".
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "chroma"
+          app = "chroma"  # Labels applied to the pod template.
         }
       }
 
       spec {
+        # Use the Docker Hub secret for image pulling.
         image_pull_secrets {
           name = kubernetes_secret.dockerhub.metadata[0].name
         }
 
         container {
-          name  = "chroma"
-          image = "mgn94/infrastructure-rag-llm:chroma-service-latest"
+          name  = "chroma"  # Name of the container.
+          image = "mgn94/infrastructure-rag-llm:chroma-service-latest"  # Container image.
           port {
-            container_port = 8000
+            container_port = 8000  # Port exposed by the container.
           }
         }
       }
@@ -191,60 +205,64 @@ resource "kubernetes_deployment" "chroma_service" {
   }
 }
 
+# Service to expose the Chroma deployment internally.
 resource "kubernetes_service" "chroma_service" {
   metadata {
-    name = "chroma"
+    name = "chroma"  # Name of the service.
   }
 
   spec {
     selector = {
-      app = "chroma"
+      app = "chroma"  # Select pods with label "app: chroma".
     }
 
     port {
-      port        = 8000
-      target_port = 8000
+      port        = 8000  # Port on which the service is exposed.
+      target_port = 8000  # Port on the pod to which traffic is forwarded.
     }
 
-    type = "ClusterIP"
+    type = "ClusterIP"  # Internal cluster IP service.
   }
 }
 
-# Déploiement du Frontend avec LoadBalancer interne (IP statique)
+# -------------------------------
+# Deployment of the Frontend service with an internal LoadBalancer
+# -------------------------------
 resource "kubernetes_deployment" "frontend_service" {
   metadata {
-    name = "frontend"
+    name = "frontend"  # Name of the deployment.
     labels = {
-      app = "frontend"
+      app = "frontend"  # Label to identify pods belonging to the Frontend service.
     }
   }
 
   spec {
-    replicas = 1
+    replicas = 1  # Number of pod replicas.
 
     selector {
       match_labels = {
-        app = "frontend"
+        app = "frontend"  # Selector to match pods with label "app: frontend".
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "frontend"
+          app = "frontend"  # Labels applied to the pod template.
         }
       }
 
       spec {
+        # Use the Docker Hub secret for image pulling.
         image_pull_secrets {
           name = kubernetes_secret.dockerhub.metadata[0].name
         }
 
         container {
-          name  = "frontend"
-          image = "mgn94/infrastructure-rag-llm:frontend-service-latest"
+          name  = "frontend"  # Name of the container.
+          image = "mgn94/infrastructure-rag-llm:frontend-service-latest"  # Container image.
           port {
-            container_port = 5003
+            container_port = 5003  # Port exposed by the container.
           }
         }
       }
@@ -252,29 +270,33 @@ resource "kubernetes_deployment" "frontend_service" {
   }
 }
 
+# Service to expose the Frontend deployment externally using an internal LoadBalancer.
 resource "kubernetes_service" "frontend_service" {
   metadata {
-    name = "frontend"
+    name = "frontend"  # Name of the service.
     annotations = {
+      # Annotation to designate an internal Azure Load Balancer.
       "service.beta.kubernetes.io/azure-load-balancer-internal"         = "true"
+      # Specify the subnet within which the load balancer should be provisioned.
       "service.beta.kubernetes.io/azure-load-balancer-internal-subnet"     = "aks-subnet"
+      # Specify the resource group where the AKS node resources reside.
       "service.beta.kubernetes.io/azure-load-balancer-resource-group"      = azurerm_kubernetes_cluster.aks.node_resource_group
     }
   }
 
   spec {
     selector = {
-      app = "frontend"
+      app = "frontend"  # Select pods with label "app: frontend".
     }
 
     port {
-      port        = 5003
-      target_port = 5003
+      port        = 5003  # Port on which the service is exposed.
+      target_port = 5003  # Port on the pod to which traffic is forwarded.
     }
 
-    type             = "LoadBalancer"
-    load_balancer_ip = "10.0.1.100"  # IP statique dans le subnet "aks-subnet"
+    type             = "LoadBalancer"  # Expose the service using a LoadBalancer.
+    load_balancer_ip = "10.0.1.100"      # Assign a static IP from the "aks-subnet" for the load balancer.
   }
 
-  depends_on = [azurerm_kubernetes_cluster.aks]
+  depends_on = [azurerm_kubernetes_cluster.aks]  # Ensure the AKS cluster is created before this service.
 }

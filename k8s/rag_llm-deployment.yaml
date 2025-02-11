@@ -1,25 +1,26 @@
-apiVersion: apps/v1
-kind: Deployment
+# Kubernetes Deployment manifest for the LLM service
+apiVersion: apps/v1                   # API version used for deployments
+kind: Deployment                      # Specifies that this resource is a Deployment
 metadata:
-  name: llm-deployment
-  namespace: default
+  name: llm-deployment                # Name of the deployment
+  namespace: default                  # Namespace in which the deployment is created (default namespace)
 spec:
-  replicas: 1
+  replicas: 1                         # Number of pod replicas to run
   selector:
     matchLabels:
-      app: llm
+      app: llm                        # Selector to match pods with the label "app: llm"
   template:
     metadata:
       labels:
-        app: llm
+        app: llm                    # Labels assigned to the pods; must match the selector above
     spec:
       containers:
-        - name: llm
-          image: "mgn94/infrastructure-rag-llm:llm-service-latest"
+        - name: llm                 # Name of the container running the LLM service
+          image: "mgn94/infrastructure-rag-llm:llm-service-latest"  # Docker image for the LLM service
           ports:
-            - containerPort: 5001
+            - containerPort: 5001   # Port exposed by the container
           env:
-            - name: PYTHONPATH
-              value: /app
+            - name: PYTHONPATH      # Environment variable to set the Python module search path
+              value: /app           # Value for the PYTHONPATH environment variable
       imagePullSecrets:
-        - name: my-registry-secret
+        - name: my-registry-secret  # Secret used to pull the container image from a private registry

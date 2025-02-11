@@ -1,34 +1,35 @@
-apiVersion: apps/v1
-kind: Deployment
+# Kubernetes Deployment manifest for the API service
+apiVersion: apps/v1                   # API version used to create the Deployment
+kind: Deployment                      # Specifies that this resource is a Deployment
 metadata:
-  name: api-deployment
-  namespace: default
+  name: api-deployment                # Name of the deployment
+  namespace: default                  # Namespace in which the deployment will run (default in this case)
 spec:
-  replicas: 1
+  replicas: 1                         # Number of pod replicas to run
   selector:
     matchLabels:
-      app: api
+      app: api                        # Selector to match pods with the label "app: api"
   template:
     metadata:
       labels:
-        app: api
+        app: api                    # Labels assigned to the pods created by this deployment
     spec:
       containers:
-        - name: api
-          image: mgn94/infrastructure-rag-llm:api-service-latest
+        - name: api                 # Name of the container
+          image: mgn94/infrastructure-rag-llm:api-service-latest  # Docker image to use for the container
           ports:
-            - containerPort: 5002
+            - containerPort: 5002   # Port exposed by the container
           livenessProbe:
             httpGet:
-              path: /healthcheck
-              port: 5002
-            initialDelaySeconds: 5
-            periodSeconds: 10
+              path: /healthcheck    # HTTP path used for the liveness check
+              port: 5002            # Port used to perform the liveness check
+            initialDelaySeconds: 5  # Delay before starting liveness probe checks after container start
+            periodSeconds: 10       # Time interval between consecutive liveness probe checks
           readinessProbe:
             httpGet:
-              path: /healthcheck
-              port: 5002
-            initialDelaySeconds: 5
-            periodSeconds: 10
+              path: /healthcheck    # HTTP path used for the readiness check
+              port: 5002            # Port used to perform the readiness check
+            initialDelaySeconds: 5  # Delay before starting readiness probe checks after container start
+            periodSeconds: 10       # Time interval between consecutive readiness probe checks
       imagePullSecrets:
-        - name: my-registry-secret
+        - name: my-registry-secret  # Reference to the secret used to pull the container image from a private registry

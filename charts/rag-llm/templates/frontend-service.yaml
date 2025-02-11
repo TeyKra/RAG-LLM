@@ -1,14 +1,15 @@
+# Kubernetes Service manifest for the Frontend application
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
+  name: frontend                    # Name of the service
   labels:
-    app: frontend
+    app: frontend                   # Label identifying the frontend application
 spec:
   selector:
-    app: frontend
+    app: frontend                   # Select pods with the label "app: frontend" to be included in this service
   ports:
-    - protocol: TCP
-      port: {{ .Values.frontend.port }}
-      targetPort: {{ .Values.frontend.port }}
-  type: {{ .Values.frontend.serviceType | default "ClusterIP" }}
+    - protocol: TCP                 # Protocol used for the service (TCP in this case)
+      port: {{ .Values.frontend.port }}       # Port on which the service is exposed, set via Helm values
+      targetPort: {{ .Values.frontend.port }} # Port on the container to which the traffic will be directed
+  type: {{ .Values.frontend.serviceType | default "ClusterIP" }} # Service type, defaults to "ClusterIP" if not specified

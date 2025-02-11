@@ -6,18 +6,18 @@ import traceback
 # Create a Flask application instance
 app = Flask(__name__)
 
-# Enable Cross-Origin Resource Sharing (CORS) if you expect cross-origin requests
+# Enable Cross-Origin Resource Sharing (CORS) to allow requests from different origins
 CORS(app)
 
-# Variables
+# Define service URLs for the LLM service endpoints
 LLM_SERVICE_POPULATE_URL = "http://llm:5001/populate"
 LLM_SERVICE_QUERY_URL = "http://llm:5001/query"
 
 @app.route("/healthcheck", methods=["GET"])
 def healthcheck():
     """
-    API health check endpoint.
-    Returns a simple status message to confirm the API is running correctly.
+    Health check endpoint for the API.
+    Returns a simple status message confirming that the API is running correctly.
     """
     return jsonify({"status": "ok"}), 200
 
@@ -31,14 +31,14 @@ def api_populate():
         # Extract JSON payload from the request
         data = request.get_json(force=True)
 
-        # Faire une requête POST HTTP vers le LLM service
+        # Make an HTTP POST request to the LLM service for population
         response = requests.post(LLM_SERVICE_POPULATE_URL, json=data)
 
-        # Respond with a success message
+        # Return the JSON response from the LLM service along with its HTTP status code
         return jsonify(response.json()), response.status_code
-    
+
     except Exception as e:
-        # Handle errors and print the stack trace for debugging purposes
+        # In case of errors, print the stack trace for debugging purposes
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
@@ -52,19 +52,20 @@ def api_query():
         # Extract JSON payload from the request
         data = request.get_json(force=True)
         
-        # Faire une requête POST HTTP vers le LLM service
+        # Make an HTTP POST request to the LLM service for querying
         response = requests.post(LLM_SERVICE_QUERY_URL, json=data)
         
-        # Return the response from the LLM service
+        # Return the JSON response from the LLM service along with its HTTP status code
         return jsonify(response.json()), response.status_code
+
     except Exception as e:
-        # Handle errors and print the stack trace for debugging purposes
+        # In case of errors, print the stack trace for debugging purposes
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     """
     Entry point of the Flask application.
-    By default, Flask listens on port 5000.
+    The application listens on all network interfaces (0.0.0.0) and port 5002.
     """
     app.run(host="0.0.0.0", port=5002, debug=False)

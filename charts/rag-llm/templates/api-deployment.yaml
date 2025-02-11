@@ -1,44 +1,46 @@
+# Kubernetes Deployment manifest for the API application
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-deployment
+  name: api-deployment              # Name of the deployment
   labels:
-    app: api
+    app: api                        # Label to identify the API application
 spec:
-  replicas: {{ .Values.api.replicas }}
+  replicas: {{ .Values.api.replicas }}  # Number of replicas, set via Helm values
   selector:
     matchLabels:
-      app: api
+      app: api                    # Selector to match pods with the label "app: api"
   template:
     metadata:
       labels:
-        app: api
+        app: api                # Label assigned to the pods
       annotations:
-{{- if .Values.prometheusScrape.enabled }}
+        {{- if .Values.prometheusScrape.enabled }}
+        # Enable Prometheus scraping for metrics
         prometheus.io/scrape: "true"
-        prometheus.io/port: "{{ .Values.api.port }}"
-        prometheus.io/path: "{{ .Values.api.metricsPath }}"
-        prometheus.io/scheme: "{{ .Values.prometheusScrape.scheme }}"
-{{- end }}
+        prometheus.io/port: "{{ .Values.api.port }}"      # Port for Prometheus to scrape metrics
+        prometheus.io/path: "{{ .Values.api.metricsPath }}" # Metrics endpoint path
+        prometheus.io/scheme: "{{ .Values.prometheusScrape.scheme }}" # Scheme (http/https) used for scraping
+        {{- end }}
     spec:
       containers:
-        - name: api
-          image: "{{ .Values.api.image }}"
+        - name: api                     # Name of the container
+          image: "{{ .Values.api.image }}"  # Container image, set via Helm values
           ports:
-            - containerPort: {{ .Values.api.port }}
+            - containerPort: {{ .Values.api.port }}  # Port exposed by the container
           livenessProbe:
             httpGet:
-              path: /healthcheck
-              port: {{ .Values.api.port }}
-            initialDelaySeconds: 5
-            periodSeconds: 10
+              path: /healthcheck      # HTTP path used for the liveness probe
+              port: {{ .Values.api.port }}  # Port used for the liveness probe
+            initialDelaySeconds: 5    # Delay before starting the liveness probe
+            periodSeconds: 10         # Interval between liveness probes
           readinessProbe:
             httpGet:
-              path: /healthcheck
-              port: {{ .Values.api.port }}
-            initialDelaySeconds: 5
-            periodSeconds: 10
+              path: /healthcheck      # HTTP path used for the readiness probe
+              port: {{ .Values.api.port }}  # Port used for the readiness probe
+            initialDelaySeconds: 5    # Delay before starting the readiness probe
+            periodSeconds: 10         # Interval between readiness probes
       imagePullSecrets:
-{{- range .Values.imagePullSecrets }}
-      - name: {{ . }}
-{{- end }}
+        {{- range .Values.imagePullSecrets }}
+      - name: {{ . }}                 # Image pull secret for accessing private container images
+        {{- end }}

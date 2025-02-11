@@ -1,32 +1,34 @@
+# Kubernetes Deployment manifest for the Chroma application
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: chroma-deployment
+  name: chroma-deployment          # Name of the deployment
   labels:
-    app: chroma
+    app: chroma                  # Label to identify the Chroma application
 spec:
-  replicas: {{ .Values.chroma.replicas }}
+  replicas: {{ .Values.chroma.replicas }}  # Number of pod replicas, defined via Helm values
   selector:
     matchLabels:
-      app: chroma
+      app: chroma                # Selector to match pods with the label "app: chroma"
   template:
     metadata:
       labels:
-        app: chroma
+        app: chroma            # Labels assigned to the pods
       annotations:
-{{- if .Values.prometheusScrape.enabled }}
+        {{- if .Values.prometheusScrape.enabled }}
+        # Enable Prometheus scraping for metrics if configured
         prometheus.io/scrape: "true"
-        prometheus.io/port: "{{ .Values.chroma.port }}"
-        prometheus.io/path: "{{ .Values.chroma.metricsPath }}"
-        prometheus.io/scheme: "{{ .Values.prometheusScrape.scheme }}"
-{{- end }}
+        prometheus.io/port: "{{ .Values.chroma.port }}"      # Port for Prometheus to scrape metrics
+        prometheus.io/path: "{{ .Values.chroma.metricsPath }}" # Path for the metrics endpoint
+        prometheus.io/scheme: "{{ .Values.prometheusScrape.scheme }}" # Scheme (HTTP/HTTPS) for scraping
+        {{- end }}
     spec:
       containers:
-        - name: chroma
-          image: "{{ .Values.chroma.image }}"
+        - name: chroma                    # Name of the container
+          image: "{{ .Values.chroma.image }}"  # Container image (populated via Helm values)
           ports:
-            - containerPort: {{ .Values.chroma.port }}
+            - containerPort: {{ .Values.chroma.port }}  # Port exposed by the container
       imagePullSecrets:
-{{- range .Values.imagePullSecrets }}
-      - name: {{ . }}
-{{- end }}
+        {{- range .Values.imagePullSecrets }}
+      - name: {{ . }}                      # Image pull secret for accessing private container images
+        {{- end }}

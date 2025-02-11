@@ -1,36 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Set character encoding for the document -->
   <meta charset="UTF-8">
+  <!-- Ensure proper scaling on all devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Link to the external CSS stylesheet -->
   <link rel="stylesheet" href="styles.css">
+  <!-- Title of the web page -->
   <title>RAG LLM Application</title>
 </head>
 <body>
+  <!-- Main container for the application content -->
   <div class="container">
+    <!-- Primary heading for the application -->
     <h1>RAG LLM Application</h1>
 
+    <!-- Section for the "Populate Database" functionality -->
     <section>
       <h2>Populate Database</h2>
+      <!-- Form that triggers the database population process -->
       <form id="populate-form">
+        <!-- Submit button for populating the database -->
         <button type="submit" class="btn">Populate</button>
       </form>
+      <!-- Preformatted text area to display the response from the populate action -->
       <pre id="populate-response" class="response-box"></pre>
     </section>  
 
+    <!-- Section for the "Query Database" functionality -->
     <section>
       <h2>Query Database</h2>
+      <!-- Form that allows the user to query the database -->
       <form id="query-form">
         <label>
           Query:
+          <!-- Input field for entering the query text; marked as required -->
           <input type="text" name="query" required class="input-field">
         </label>
+        <!-- Submit button for sending the query -->
         <button type="submit" class="btn">Submit</button>
       </form>
+      <!-- Preformatted text area to display the response from the query action -->
       <pre id="query-response" class="response-box"></pre>
     </section>
   </div>
 
+  <!-- Link to the external JavaScript file that handles form submissions and interactions -->
   <script src="scripts.js"></script>
 </body>
 </html>

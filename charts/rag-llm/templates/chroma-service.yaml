@@ -1,14 +1,15 @@
+# Kubernetes Service manifest for the Chroma application
 apiVersion: v1
 kind: Service
 metadata:
-  name: chroma
+  name: chroma                # Name of the service
   labels:
-    app: chroma
+    app: chroma               # Label to identify the Chroma application
 spec:
   selector:
-    app: chroma
+    app: chroma               # Selects pods with the label "app: chroma" to be part of this service
   ports:
-    - protocol: TCP
-      port: {{ .Values.chroma.port }}
-      targetPort: {{ .Values.chroma.port }}
-  type: ClusterIP
+    - protocol: TCP           # Specifies that the service uses TCP protocol
+      port: {{ .Values.chroma.port }}       # Port on which the service is exposed (from Helm values)
+      targetPort: {{ .Values.chroma.port }} # Port on the pod that the service will forward traffic to (must match the container port)
+  type: ClusterIP             # Service type that exposes the service on an internal IP within the cluster

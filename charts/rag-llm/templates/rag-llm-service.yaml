@@ -1,14 +1,15 @@
+# Kubernetes Service manifest for the LLM application
 apiVersion: v1
 kind: Service
 metadata:
-  name: llm
+  name: llm                # Name of the service
   labels:
-    app: llm
+    app: llm               # Label to identify the LLM application
 spec:
   selector:
-    app: llm
+    app: llm               # Select pods with the label "app: llm" to be included in this service
   ports:
-    - protocol: TCP
-      port: {{ .Values.llm.port }}
-      targetPort: {{ .Values.llm.port }}
-  type: ClusterIP
+    - protocol: TCP        # Protocol used for communication (TCP in this case)
+      port: {{ .Values.llm.port }}       # Port on which the service is exposed (defined via Helm values)
+      targetPort: {{ .Values.llm.port }} # Port on the pod where the application is running (must match the container port)
+  type: ClusterIP          # Service type that exposes the service on an internal IP within the cluster

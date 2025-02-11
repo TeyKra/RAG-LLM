@@ -8,7 +8,7 @@ from src.get_embedding import get_embedding_function
 from googletrans import Translator
 
 import logging
-# Configuration du logger
+# Configure the logger to display INFO-level messages with a specific format.
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
@@ -16,8 +16,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Constants
-CHROMA_PATH = "chroma"  # Path for Chroma's persistent database.
+CHROMA_PATH = "chroma"  # Directory path for Chroma's persistent database.
 
+# Template for building the prompt for the language model.
 PROMPT_TEMPLATE = """
 You are an expert assistant. Use only the following context to answer the user's question.
 DO NOT quote or restate the entire context verbatim.
@@ -32,7 +33,7 @@ Question:
 Answer:
 """
 
-# Configuration du logger
+# (The logger configuration is repeated here, but it ensures that logging is properly set up.)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
@@ -48,9 +49,8 @@ class ModelLoader:
 
     def __new__(cls):
         if cls._instance is None:
-            # Initialize the singleton instance
+            # Create the singleton instance.
             cls._instance = super(ModelLoader, cls).__new__(cls)
-            
             try:
                 logger.info("Loading tokenizer from checkpoint 'google/flan-t5-base'...")
                 cls._instance.tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-base")
@@ -72,6 +72,7 @@ class ModelLoader:
                     temperature=0.5,
                     pad_token_id=cls._instance.tokenizer.eos_token_id,
                 )
+                # Wrap the pipeline with LangChain's HuggingFacePipeline for integration.
                 cls._instance.llm = HuggingFacePipeline(pipeline=cls._instance.pipeline)
                 logger.info("Pipeline initialized successfully.")
             except Exception as e:
@@ -91,6 +92,7 @@ def translate_to_english(text: str) -> str:
     """
     translator = Translator()
     try:
+        # Translate from auto-detected language to English.
         translation = translator.translate(text, src='auto', dest='en')
         return translation.text
     except Exception as e:
@@ -107,42 +109,47 @@ def query_rag(query_text: str) -> str:
     Returns:
         str: A formatted response containing the generated answer and sources.
     """
-    # Load the embedding function and Chroma database.
+    # Load the embedding function.
     embedding_function = get_embedding_function()
+    # Initialize or load the Chroma database with the specified persistence directory.
     db = Chroma(
         persist_directory=CHROMA_PATH,
         embedding_function=embedding_function
     )
 
-    # Retrieve top-k similar documents from the database.
+    # Retrieve the top-k (here, 5) similar documents along with their scores.
     results = db.similarity_search_with_score(query_text, k=5)
+    # Concatenate the content of the retrieved documents, separated by a divider.
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
 
-    # Build the prompt using a template.
+    # Build the prompt by filling in the template with the retrieved context and the user's query.
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, question=query_text)
 
-    # Generate a response using the preloaded model.
+    # Get the preloaded language model from the singleton ModelLoader.
     model_loader = ModelLoader()
     llm = model_loader.llm
+    # Invoke the language model with the constructed prompt.
     response_text = llm.invoke(prompt)
 
-    # Extract the answer portion of the response.
+    # Extract the answer portion from the model's response.
     if "Answer:" in response_text:
         answer = response_text.split("Answer:")[1].strip()
     else:
         answer = response_text.strip()
 
-    # Translate the generated answer to English.
+    # Log the generated answer before translation.
     logger.info(f"Generated Response (Before Translation): {answer}")
+    # Translate the answer to English.
     translated_answer = translate_to_english(answer)
     logger.info(f"Translated Response: {translated_answer}")
 
-    # Format the response with source information.
+    # Extract source information from the metadata of the retrieved documents.
     sources = [doc.metadata.get("id", None) for doc, _score in results]
+    # Format the final response with the translated answer and the list of source IDs.
     formatted_response = f"Answer:\n{translated_answer}\nSources: {sources}"
 
-    # Log the final formatted response and sources.
+    # Log the final formatted response.
     logger.info(f"Final Response:\n{formatted_response}")
 
     return formatted_response

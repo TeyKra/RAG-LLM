@@ -3,50 +3,51 @@ version: '3.8'
 services:
   llm:
     build:
-      context: .
-      dockerfile: dockerfile.rag_llm
+      context: .                   # Use the current directory as the build context.
+      dockerfile: dockerfile.rag_llm  # Specify the Dockerfile for building the LLM service.
     ports:
-      - "5001:5001"  # Mappe le port 5001 du conteneur sur l'hôte
+      - "5001:5001"                # Map port 5001 of the container to port 5001 on the host.
     depends_on:
-      - chroma
+      - chroma                    # Ensure the "chroma" service is started before "llm".
     networks:
-      - app-network
+      - app-network               # Connect this service to the "app-network" network.
     volumes:
-      - ./data:/app/data
+      - ./data:/app/data          # Mount the local "data" directory into "/app/data" inside the container.
     environment:
-      PYTHONPATH: /app
+      PYTHONPATH: /app            # Set the PYTHONPATH environment variable to "/app".
 
   api:
     build:
-      context: .
-      dockerfile: dockerfile.api
+      context: .                   # Use the current directory as the build context.
+      dockerfile: dockerfile.api   # Specify the Dockerfile for building the API service.
     ports:
-      - "5002:5002"  # Mappe le port 5000 du conteneur sur l'hôte
+      - "5002:5002"                # Map port 5002 of the container to port 5002 on the host.
+      # Note: The original comment mentioned mapping port 5000, but here it maps 5002.
     depends_on:
-      - chroma
+      - chroma                    # Ensure the "chroma" service is started before "api".
     networks:
-      - app-network
+      - app-network               # Connect this service to the "app-network" network.
 
   frontend:
     build:
-      context: .
-      dockerfile: dockerfile.frontend
+      context: .                   # Use the current directory as the build context.
+      dockerfile: dockerfile.frontend  # Specify the Dockerfile for building the Frontend service.
     ports:
-      - "5003:5003"
+      - "5003:5003"                # Map port 5003 of the container to port 5003 on the host.
     depends_on:
-      - api
+      - api                       # Ensure the "api" service is started before "frontend".
     networks:
-      - app-network
+      - app-network               # Connect this service to the "app-network" network.
 
   chroma:
     build:
-      context: .
-      dockerfile: dockerfile.chroma
+      context: .                   # Use the current directory as the build context.
+      dockerfile: dockerfile.chroma  # Specify the Dockerfile for building the Chroma service.
     ports:
-      - "8000:8000"  # Mappe le port 8000 du conteneur sur l'hôte
+      - "8000:8000"                # Map port 8000 of the container to port 8000 on the host.
     networks:
-      - app-network
+      - app-network               # Connect this service to the "app-network" network.
 
 networks:
   app-network:
-    driver: bridge
+    driver: bridge                # Use the bridge driver to create a local network.

@@ -1,22 +1,23 @@
-apiVersion: apps/v1
-kind: Deployment
+# Kubernetes Deployment manifest for the Chroma service
+apiVersion: apps/v1                   # Specifies the API version used for Deployments
+kind: Deployment                      # Indicates that this resource is a Deployment
 metadata:
-  name: chroma-deployment
-  namespace: default
+  name: chroma-deployment             # Name of the deployment
+  namespace: default                  # Namespace where the deployment is created (default namespace)
 spec:
-  replicas: 1
+  replicas: 1                         # Number of pod replicas to run
   selector:
     matchLabels:
-      app: chroma
+      app: chroma                     # Selector to match pods with the label "app: chroma"
   template:
     metadata:
       labels:
-        app: chroma
+        app: chroma                 # Labels assigned to the pods created by this deployment; must match the selector above
     spec:
       containers:
-        - name: chroma
-          image: mgn94/infrastructure-rag-llm:chroma-service-latest
+        - name: chroma              # Name of the container running in the pod
+          image: mgn94/infrastructure-rag-llm:chroma-service-latest  # Docker image for the Chroma service
           ports:
-            - containerPort: 8000
+            - containerPort: 8000   # Port exposed by the container
       imagePullSecrets:
-        - name: my-registry-secret
+        - name: my-registry-secret  # Secret used to pull the container image from a private registry

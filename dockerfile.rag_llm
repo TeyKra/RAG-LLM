@@ -1,20 +1,29 @@
-# Dockerfile.llm
+# Dockerfile for the LLM service
 FROM python:3.10-slim
 
+# Update package lists, install git and curl, and then clean up the apt cache
 RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
+# Set the working directory to /app
 WORKDIR /app
+# Add /app to the PYTHONPATH environment variable so Python can locate modules in this directory
 ENV PYTHONPATH=/app
 
+# Copy the requirements file into the container
 COPY requirements.txt .
+# Install Python dependencies from requirements.txt without caching to reduce image size
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copie du code source
+# Copy the source code files into /app/src
+# These include the __init__.py, get_embedding.py, populate_database.py, query_data.py, and rag_llm_services.py files
 COPY src/__init__.py src/get_embedding.py src/populate_database.py src/query_data.py src/rag_llm_services.py /app/src/
 
-# Copie des PDF dans /app/data
+# Create a directory for PDF files and copy all PDFs from the local data directory into /app/data
 RUN mkdir /app/data
 COPY data/*.pdf /app/data/
 
+# Expose port 5001 so that the LLM service can be accessed on this port
 EXPOSE 5001
+
+# Set the default command to run the LLM service by executing the rag_llm_services.py script
 CMD ["python", "src/rag_llm_services.py"]

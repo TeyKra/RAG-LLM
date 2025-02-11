@@ -1,20 +1,21 @@
 /* Global Styles */
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', sans-serif; /* Use the 'Inter' font or a sans-serif fallback */
   margin: 0;
   padding: 0;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  justify-content: center;  /* Center content horizontally */
+  align-items: center;      /* Center content vertically */
+  min-height: 100vh;        /* Ensure the body takes at least the full viewport height */
 
-  /* Dégradé et animation */
-  background: linear-gradient(270deg, #00b4db, #0083b0);
-  background-size: 400% 400%;
-  animation: gradientAnimation 15s ease infinite;
-  color: #333;
+  /* Gradient background with animation */
+  background: linear-gradient(270deg, #00b4db, #0083b0);  /* Create a gradient background */
+  background-size: 400% 400%;                              /* Increase the size for smooth animation */
+  animation: gradientAnimation 15s ease infinite;         /* Animate the gradient infinitely over 15 seconds */
+  color: #333;          /* Default text color */
 }
 
+/* Keyframes for the gradient animation */
 @keyframes gradientAnimation {
   0% {
     background-position: 0% 50%;
@@ -29,74 +30,74 @@ body {
 
 /* Centered Container */
 .container {
-  max-width: 500px;
-  background: white;
-  padding: 20px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  max-width: 500px;                          /* Limit the maximum width */
+  background: white;                          /* White background for contrast */
+  padding: 20px;                             /* Padding inside the container */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  border-radius: 8px;                          /* Rounded corners */
 }
 
-/* Headers */
+/* Headers styling */
 h1 {
-  text-align: center;
-  color: #222;
+  text-align: center; /* Center-align the main heading */
+  color: #222;        /* Darker text color for the main heading */
 }
 
 h2 {
-  color: #444;
-  border-bottom: 2px solid #ddd;
-  padding-bottom: 5px;
-  margin-bottom: 15px;
+  color: #444;                 /* Slightly lighter than h1 */
+  border-bottom: 2px solid #ddd; /* Underline with a light gray border */
+  padding-bottom: 5px;         /* Space below the header text */
+  margin-bottom: 15px;         /* Space after the header */
 }
 
-/* Forms */
+/* Form styling */
 form {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-direction: column; /* Stack form elements vertically */
+  gap: 10px;              /* Spacing between form elements */
 }
 
-/* Input Fields */
+/* Input Field styling */
 .input-field {
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #ccc;    /* Light gray border */
   border-radius: 5px;
   font-size: 16px;
-  width: 100%;
-  box-sizing: border-box;
+  width: 100%;               /* Take full width of the container */
+  box-sizing: border-box;    /* Include padding and border in the element's total width */
 }
 
 .input-field:focus {
-  border-color: #007bff;
-  outline: none;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  border-color: #007bff;     /* Change border color on focus to blue */
+  outline: none;             /* Remove the default outline */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3); /* Add a subtle blue glow on focus */
 }
 
-/* Buttons */
+/* Button styling */
 .btn {
   padding: 10px;
   border: none;
   border-radius: 5px;
-  background: #007bff;
-  color: white;
+  background: #007bff;       /* Blue background for buttons */
+  color: white;              /* White text */
   font-size: 16px;
-  cursor: pointer;
-  transition: background 0.3s ease-in-out;
+  cursor: pointer;           /* Pointer cursor on hover */
+  transition: background 0.3s ease-in-out; /* Smooth background transition on hover */
 }
 
 .btn:hover {
-  background: #0056b3;
+  background: #0056b3;       /* Darker blue on hover */
 }
 
-/* Response Box */
+/* Response Box styling */
 .response-box {
-  background: #f1f1f1;
+  background: #f1f1f1;       /* Light gray background */
   padding: 10px;
   border-radius: 5px;
-  border: 1px solid #ddd;
-  font-family: monospace;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  max-height: 200px;
-  overflow-y: auto;
+  border: 1px solid #ddd;    /* Light border */
+  font-family: monospace;    /* Monospaced font for code-like appearance */
+  white-space: pre-wrap;     /* Preserve whitespace and wrap text */
+  word-wrap: break-word;     /* Break long words if necessary */
+  max-height: 200px;         /* Limit maximum height */
+  overflow-y: auto;          /* Add vertical scroll if content exceeds max height */
 }

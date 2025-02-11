@@ -1,34 +1,35 @@
-apiVersion: apps/v1
-kind: Deployment
+# Kubernetes Deployment manifest for the Frontend service
+apiVersion: apps/v1                   # API version used for Deployments
+kind: Deployment                      # Specifies that this resource is a Deployment
 metadata:
-  name: frontend-deployment
-  namespace: default
+  name: frontend-deployment           # Name of the deployment
+  namespace: default                # Namespace where the deployment will run (default namespace)
 spec:
-  replicas: 1
+  replicas: 1                         # Number of pod replicas to run
   selector:
     matchLabels:
-      app: frontend
+      app: frontend                   # Selector to match pods with the label "app: frontend"
   template:
     metadata:
       labels:
-        app: frontend
+        app: frontend               # Labels assigned to the pods created by this deployment; must match the selector above
     spec:
       containers:
-        - name: frontend
-          image: mgn94/infrastructure-rag-llm:frontend-service-latest
+        - name: frontend            # Name of the container running the frontend service
+          image: mgn94/infrastructure-rag-llm:frontend-service-latest  # Docker image for the frontend service
           ports:
-            - containerPort: 5003
+            - containerPort: 5003   # Port exposed by the container (the frontend service listens on port 5003)
           livenessProbe:
             httpGet:
-              path: /
-              port: 5003
-            initialDelaySeconds: 5
-            periodSeconds: 10
+              path: /              # HTTP path used for the liveness check (root path)
+              port: 5003           # Port used to perform the liveness check
+            initialDelaySeconds: 5  # Delay before the liveness probe is initiated after the container starts
+            periodSeconds: 10       # Frequency (in seconds) of the liveness probe checks
           readinessProbe:
             httpGet:
-              path: /
-              port: 5003
-            initialDelaySeconds: 5
-            periodSeconds: 10
+              path: /              # HTTP path used for the readiness check (root path)
+              port: 5003           # Port used to perform the readiness check
+            initialDelaySeconds: 5  # Delay before the readiness probe is initiated after the container starts
+            periodSeconds: 10       # Frequency (in seconds) of the readiness probe checks
       imagePullSecrets:
-        - name: my-registry-secret
+        - name: my-registry-secret  # Secret used to pull the container image from a private registry

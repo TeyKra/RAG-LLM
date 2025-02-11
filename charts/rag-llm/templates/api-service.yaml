@@ -1,14 +1,15 @@
+# Kubernetes Service manifest for the API application
 apiVersion: v1
 kind: Service
 metadata:
-  name: api
+  name: api                # Name of the service
   labels:
-    app: api
+    app: api               # Label to identify the API application
 spec:
   selector:
-    app: api
+    app: api               # Select pods with the label "app: api" to be exposed by this service
   ports:
-    - protocol: TCP
-      port: {{ .Values.api.port }}
-      targetPort: {{ .Values.api.port }}
-  type: ClusterIP
+    - protocol: TCP        # Protocol used for the connection (TCP in this case)
+      port: {{ .Values.api.port }}       # Port on which the service is exposed (defined in Helm values)
+      targetPort: {{ .Values.api.port }} # Port on the container that the service routes traffic to (must match the container's exposed port)
+  type: ClusterIP          # Service type that exposes the service on an internal IP in the cluster

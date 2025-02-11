@@ -1,19 +1,26 @@
 # Dockerfile.api
 FROM python:3.10-slim
 
+# Update the package list, install git and curl, then remove the package lists to reduce image size
 RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
+# Set the working directory to /app
 WORKDIR /app
-# Ajouter /app au PYTHONPATH
+
+# Add /app to the PYTHONPATH environment variable so Python can locate modules within /app
 ENV PYTHONPATH=/app
 
+# Copy the requirements.txt file into the current working directory
 COPY requirements.txt .
+
+# Install Python dependencies listed in requirements.txt without caching the packages
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier api.py dans le dossier `src` et son contenu dans /app/src
+# Copy the api.py file from the local src directory to /app/src in the container
 COPY src/api.py /app/src/
 
+# Expose port 5002 for the API service
 EXPOSE 5002
 
-# Lancer l'API
+# Run the API by executing the api.py script
 CMD ["python", "src/api.py"]

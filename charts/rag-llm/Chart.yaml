@@ -1,14 +1,15 @@
+# Helm Chart definition for deploying a RAG LLM, its microservices, and the monitoring stack
 apiVersion: v2
 name: rag-llm
-description: Helm chart pour déployer un RAG LLM, ses microservices et la stack monitoring
+description: Helm chart to deploy a RAG LLM, its microservices, and the monitoring stack
 version: 0.1.0
 
-# -- Dépendances pour Prometheus et Grafana
+# Dependencies for Prometheus and Grafana
 dependencies:
   - name: prometheus
-    version: "~15.0.0" # ou plus récent si besoin
+    version: "~15.0.0" # Use this version or a newer one if required
     repository: "https://prometheus-community.github.io/helm-charts"
 
   - name: grafana
-    version: "~7.0.0" # Utilisez une version >= 7.0.0 pour éviter la PSP
+    version: "~7.0.0" # Use a version >= 7.0.0 to avoid issues with Pod Security Policies (PSP)
     repository: "https://grafana.github.io/helm-charts"

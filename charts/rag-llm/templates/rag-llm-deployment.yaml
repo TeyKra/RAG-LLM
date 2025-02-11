@@ -1,35 +1,37 @@
+# Kubernetes Deployment manifest for the LLM application
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: llm-deployment
+  name: llm-deployment             # Name of the deployment for the LLM service
   labels:
-    app: llm
+    app: llm                       # Label to identify the LLM application
 spec:
-  replicas: {{ .Values.llm.replicas }}
+  replicas: {{ .Values.llm.replicas }}  # Number of pod replicas, as defined in the Helm values file
   selector:
     matchLabels:
-      app: llm
+      app: llm                   # Selector that targets pods with the label "app: llm"
   template:
     metadata:
       labels:
-        app: llm
+        app: llm               # Labels assigned to the pods created by this deployment
       annotations:
-{{- if .Values.prometheusScrape.enabled }}
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "{{ .Values.llm.port }}"
-        prometheus.io/path: "{{ .Values.llm.metricsPath }}"
-        prometheus.io/scheme: "{{ .Values.prometheusScrape.scheme }}"
-{{- end }}
+        {{- if .Values.prometheusScrape.enabled }}
+        # If Prometheus scraping is enabled, add the following annotations:
+        prometheus.io/scrape: "true"                              # Enable Prometheus to scrape metrics from this pod
+        prometheus.io/port: "{{ .Values.llm.port }}"              # Port on which Prometheus should scrape metrics
+        prometheus.io/path: "{{ .Values.llm.metricsPath }}"       # HTTP path for Prometheus metrics endpoint
+        prometheus.io/scheme: "{{ .Values.prometheusScrape.scheme }}"  # Scheme (HTTP/HTTPS) used for scraping metrics
+        {{- end }}
     spec:
       containers:
-        - name: llm
-          image: "{{ .Values.llm.image }}"
+        - name: llm                                # Name of the container for the LLM application
+          image: "{{ .Values.llm.image }}"           # Docker image for the LLM application, provided via Helm values
           ports:
-            - containerPort: {{ .Values.llm.port }}
+            - containerPort: {{ .Values.llm.port }}  # Port exposed by the container for communication
           env:
-            - name: PYTHONPATH
-              value: /app
+            - name: PYTHONPATH                      # Environment variable to configure Python module search path
+              value: /app                           # Sets PYTHONPATH to /app, ensuring the application modules are found
       imagePullSecrets:
-{{- range .Values.imagePullSecrets }}
-      - name: {{ . }}
-{{- end }}
+        {{- range .Values.imagePullSecrets }}
+      - name: {{ . }}                              # Image pull secret for accessing private container registries (iterated from Helm values)
+        {{- end }}

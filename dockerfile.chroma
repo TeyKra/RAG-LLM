@@ -1,20 +1,20 @@
 # Dockerfile.chroma
 FROM python:3.10-slim
 
-# Définir le répertoire de travail
+# Set the working directory to /app
 WORKDIR /app
 
-# Mettre à jour pip
+# Upgrade pip to the latest version
 RUN pip install --upgrade pip
 
-# Installer ChromaDB et ses dépendances
+# Install ChromaDB and its dependencies, including uvicorn for running the server
 RUN pip install --no-cache-dir chromadb uvicorn
 
-# Exposer le port 8000
+# Expose port 8000 so that the ChromaDB service is accessible
 EXPOSE 8000
 
-# Créer un dossier pour la base de données
+# Create a directory for the database files
 RUN mkdir -p /app/.chroma
 
-# Commande pour démarrer ChromaDB
+# Command to start ChromaDB, specifying the database path, host, and port
 CMD ["chroma", "run", "--path", "/app/.chroma", "--host", "0.0.0.0", "--port", "8000"]
