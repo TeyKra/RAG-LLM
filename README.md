@@ -1,11 +1,6 @@
 # Infrastructure RAG LLM
 
 ---
-## Project Demonstration
-Watch the demonstration on youtube : 
-📹 **[Watch Video](https://youtu.be/J8PcfdjdevA)** 
-
----
 
 ## Table of Contents
 - [Project Architecture](#project-architecture)
